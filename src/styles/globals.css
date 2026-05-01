@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@700;900&family=Inter:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Lighter dark theme — visible in daylight */
+  --bg-base:     #080e1a;
+  --bg-panel:    #0e1828;
+  --bg-card:     #131f30;
+  --bg-elevated: #1a2a3f;
+
+  --blue:        #00d4ff;
+  --purple:      #9b5de5;
+  --blue-dim:    rgba(0, 212, 255, 0.18);
+  --purple-dim:  rgba(155, 93, 229, 0.18);
+
+  --glow-blue:    0 0 14px rgba(0,212,255,0.55), 0 0 35px rgba(0,212,255,0.22);
+  --glow-purple:  0 0 14px rgba(155,93,229,0.55), 0 0 35px rgba(155,93,229,0.22);
+  --glow-blue-sm: 0 0 10px rgba(0,212,255,0.5);
+
+  --text-primary:   #eef2ff;
+  --text-secondary: #90a8cc;
+  --text-dim:       #4a6080;
+
+  --border:        rgba(0,212,255,0.18);
+  --border-purple: rgba(155,93,229,0.25);
+
+  --radius: 2px;
+
+  /* quest category colors */
+  --cat-ritual:   #9b5de5;
+  --cat-body:     #e8623a;
+  --cat-work:     #10b87e;
+  --cat-skill:    #3b8fe8;
+  --cat-mind:     #e8a825;
+  --cat-recovery: #7089a8;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body, #root {
+  min-height: 100vh;
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(155,93,229,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,212,255,0.08) 0%, transparent 60%);
+}
+
+/* scanline texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Panel base */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,212,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.panel-header {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  padding: 13px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-header::before {
+  content: '';
+  width: 3px; height: 16px;
+  background: var(--blue);
+  box-shadow: var(--glow-blue-sm);
+  display: block; flex-shrink: 0;
+}
+
+/* Buttons */
+.btn {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  color: var(--blue);
+  border-color: var(--blue);
+  box-shadow: var(--glow-blue-sm);
+}
+
+.btn:active { transform: scale(0.96); }
+
+.btn-danger {
+  color: var(--text-dim);
+  border-color: transparent;
+  background: transparent;
+  padding: 4px 8px;
+}
+
+.btn-danger:hover {
+  color: #ff5577;
+  border-color: rgba(255,85,119,0.35);
+  box-shadow: 0 0 8px rgba(255,85,119,0.25);
+}
+
+/* ── Global category colour classes (used in multiple components) ── */
+.cat-ritual   { color: var(--cat-ritual);   background: rgba(124,58,237,0.12); }
+.cat-body     { color: var(--cat-body);     background: rgba(216,90,48,0.12); }
+.cat-work     { color: var(--cat-work);     background: rgba(15,156,110,0.12); }
+.cat-skill    { color: var(--cat-skill);    background: rgba(43,125,233,0.12); }
+.cat-mind     { color: var(--cat-mind);     background: rgba(212,146,10,0.12); }
+.cat-recovery { color: var(--cat-recovery); background: rgba(96,104,128,0.12); }
