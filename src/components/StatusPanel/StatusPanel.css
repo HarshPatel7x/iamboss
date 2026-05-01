@@ -1,0 +1,161 @@
+.status-panel { margin-bottom: 16px; }
+
+.skills-list { padding: 8px 0; }
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.12s ease;
+}
+
+.skill-row:hover { background: rgba(0,212,255,0.02); }
+.skill-row:last-child { border-bottom: none; }
+
+.skill-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.skill-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.skill-level {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  color: var(--purple);
+  text-shadow: 0 0 8px rgba(124,58,237,0.5);
+  letter-spacing: 0.05em;
+}
+
+.skill-xp-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.skill-xp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #5b21b6, var(--purple));
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(124,58,237,0.6);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skills-empty {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 20px 16px;
+  letter-spacing: 0.05em;
+}
+
+.skill-add-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.skill-add-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skill-input {
+  flex: 1;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.skill-input:focus {
+  border-color: var(--blue);
+  box-shadow: var(--glow-blue-sm);
+}
+
+.skill-input::placeholder { color: var(--text-dim); }
+
+.skill-locked {
+  font-size: 13px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  cursor: default;
+  padding: 4px 6px;
+}
+
+.skill-error-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(255,85,119,0.1);
+  border-bottom: 1px solid rgba(255,85,119,0.2);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px; color: #ff5577; letter-spacing: 0.04em;
+}
+
+.skill-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2300d4ff' opacity='0.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+.skill-select option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.skill-input--error {
+  border-color: rgba(255, 68, 102, 0.6) !important;
+  box-shadow: 0 0 8px rgba(255, 68, 102, 0.25) !important;
+}
+
+.skill-error {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #ff4466;
+  padding-left: 2px;
+}
+
+.sp-skill-limit {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em;
+}
+.sp-limit-tag {
+  margin-left: auto;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+  color: #f0c060; background: rgba(240,192,96,0.08);
+  border: 1px solid rgba(240,192,96,0.25);
+  padding: 3px 7px; border-radius: 1px;
+}
+.sp-next-slot {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em;
+  text-align: center; padding: 8px 16px;
+}

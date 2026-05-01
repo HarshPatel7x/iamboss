@@ -1,0 +1,178 @@
+.report-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500;
+  backdrop-filter: blur(4px);
+  animation: fadeInOverlay 0.15s ease;
+}
+
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+.report-modal {
+  background: var(--bg-panel);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 4px;
+  width: 540px;
+  max-width: calc(100vw - 32px);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow:
+    0 0 40px rgba(0,212,255,0.12),
+    0 0 80px rgba(124,58,237,0.08),
+    0 24px 48px rgba(0,0,0,0.6);
+  animation: modalPop 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+  position: relative;
+}
+
+.report-modal::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,212,255,0.03) 0%, transparent 60%);
+  pointer-events: none; border-radius: 4px;
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.88) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.report-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.2em;
+  color: var(--blue); text-shadow: var(--glow-blue);
+}
+
+.report-body { padding: 20px; }
+
+.report-top {
+  display: flex; align-items: center; gap: 24px; margin-bottom: 24px;
+}
+
+/* Ring */
+.ring-wrap { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.ring-svg { width: 120px; height: 120px; }
+.ring-bg {
+  fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 8;
+}
+.ring-fill {
+  fill: none; stroke-width: 8; stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1), stroke 0.4s ease;
+  filter: drop-shadow(0 0 6px rgba(124,58,237,0.6));
+}
+.ring-label {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-pct {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px; font-weight: 900; color: var(--text-primary); line-height: 1;
+}
+.ring-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.15em;
+  color: var(--text-dim); margin-top: 2px;
+}
+
+/* Stats grid */
+.report-stats {
+  flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px; padding: 10px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.stat-card:hover { border-color: rgba(0,212,255,0.25); box-shadow: var(--glow-blue-sm); }
+
+.stat-card--xp { border-color: rgba(240,192,96,0.15); }
+.stat-card--xp:hover { border-color: rgba(240,192,96,0.3); box-shadow: 0 0 8px rgba(240,192,96,0.2); }
+.stat-card--streak { border-color: rgba(0,212,255,0.12); }
+.stat-card--level { border-color: rgba(124,58,237,0.2); }
+.stat-card--level:hover { border-color: rgba(124,58,237,0.4); box-shadow: var(--glow-purple); }
+
+.stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px; font-weight: 900; color: var(--text-primary); line-height: 1;
+}
+.stat-card--xp .stat-value { color: #f0c060; text-shadow: 0 0 10px rgba(240,192,96,0.4); }
+.stat-card--level .stat-value { color: #c084fc; text-shadow: 0 0 10px rgba(192,132,252,0.4); }
+
+.stat-denom {
+  font-size: 12px; font-weight: 400; color: var(--text-dim); font-family: 'Rajdhani', sans-serif;
+}
+
+.stat-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+  color: var(--text-dim); margin-top: 4px; text-transform: uppercase;
+}
+
+/* Category breakdown */
+.report-section-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase;
+  border-top: 1px solid var(--border); padding-top: 16px;
+}
+
+.cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+
+.cat-row { display: flex; align-items: center; gap: 10px; }
+
+.cat-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+  min-width: 110px;
+}
+
+.cat-track {
+  flex: 1; height: 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 1px; overflow: hidden;
+}
+
+.cat-fill {
+  height: 100%; border-radius: 1px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.cat-fraction {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px; color: var(--text-dim); min-width: 28px; text-align: right;
+}
+
+/* Skills grid */
+.skill-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px; margin-top: 4px;
+}
+
+.skill-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-purple);
+  border-radius: 2px; padding: 8px 10px; text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.skill-stat-card:hover { border-color: var(--purple); box-shadow: var(--glow-purple); }
+
+.skill-stat-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;
+}
+.skill-stat-level {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px; color: #c084fc; text-shadow: 0 0 8px rgba(192,132,252,0.4);
+}
+.skill-stat-xp {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; color: var(--text-dim); margin-top: 2px;
+}

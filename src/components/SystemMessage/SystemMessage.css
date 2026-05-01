@@ -1,0 +1,25 @@
+.system-msg-panel {
+  padding: 14px 16px;
+}
+.sys-header {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 10px;
+}
+.sys-icon {
+  color: #f0c060; font-size: 13px;
+  text-shadow: 0 0 8px rgba(240,192,96,0.5);
+}
+.sys-skill {
+  font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
+  color: #f0c060; letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(240,192,96,0.3);
+}
+.sys-tag {
+  font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 600;
+  color: var(--text-dim); letter-spacing: 0.08em;
+}
+.sys-body {
+  font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); line-height: 1.5;
+  letter-spacing: 0.02em;
+}
