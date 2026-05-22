@@ -53,6 +53,20 @@ interface GameStore extends AppData {
 
 let floatId = 0;
 
+function syncStateToServer(s: GameStore) {
+  const backup = {
+    playerName: s.playerName, setupComplete: s.setupComplete,
+    level: s.level, xp: s.xp, xpToNext: s.xpToNext,
+    title: s.title, lastResetDate: s.lastResetDate, streak: s.streak,
+    quests: s.quests, skills: s.skills, logs: s.logs, rituals: s.rituals,
+  };
+  fetch('/api/save-state', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(backup),
+  }).catch(() => {});
+}
+
 function awardSkillXp(skills: Skill[], skillName: string, amount: number): Skill[] {
   return skills.map(s => {
     if (s.name !== skillName) return s;
@@ -203,6 +217,7 @@ export const useGameStore = create<GameStore>()(
             id: `q${Date.now()}`, ...input, category, stat, completedToday: false,
           };
           set(s => ({ quests: [...s.quests, newQuest] }));
+          syncStateToServer(get());
         },
 
         deleteQuest: (id) => set(s => ({ quests: s.quests.filter(q => q.id !== id) })),
@@ -213,6 +228,7 @@ export const useGameStore = create<GameStore>()(
           if (s.skills.length >= computeMaxSkills(s.level)) return false;
           const newSkill: Skill = { id: `s${Date.now()}`, name, level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL };
           set(s => ({ skills: [...s.skills, newSkill] }));
+          syncStateToServer(get());
           return true;
         },
 
@@ -244,6 +260,7 @@ export const useGameStore = create<GameStore>()(
             logs: [],
             rituals: [],
           });
+          syncStateToServer(get());
         },
 
         submitRitual: (input) => {
@@ -319,6 +336,16 @@ export const useGameStore = create<GameStore>()(
             get().logEvent({ type: 'level_up', title: `Reached Level ${lastLevel}`, level: lastLevel });
             get().showLevelUpOverlay(lastLevel);
           }
+
+          // Silent full-state backup to disk + GitHub
+          syncStateToServer(get());
+
+          // Silent sync to companion server — writes /memories/iamboss-ritual-log.md
+          fetch('/api/sync-ritual', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rituals: updatedRituals, quests: get().quests }),
+          }).catch(() => {});
         },
 
         openEveningRitual: () => set({ showEveningRitual: true }),
@@ -361,6 +388,7 @@ export const useGameStore = create<GameStore>()(
             logs: [],
             rituals: [],
           });
+          syncStateToServer(get());
         },
 
         applyData: (data) => set(s => ({ ...s, ...data })),

@@ -54,8 +54,22 @@ export default function EveningRitual() {
     closeEveningRitual();
   }
 
+  const hasUnsavedContent =
+    !existing &&
+    (Object.values(statusMap).some(v => v !== null) ||
+      mattered.trim() !== '' ||
+      obstacle.trim() !== '' ||
+      tomorrow.trim() !== '' ||
+      mood !== null ||
+      energy !== null);
+
+  function handleOverlayClick() {
+    if (hasUnsavedContent && !window.confirm('Discard ritual progress?')) return;
+    closeEveningRitual();
+  }
+
   return (
-    <div className="er-overlay" onClick={closeEveningRitual}>
+    <div className="er-overlay" onClick={handleOverlayClick}>
       <div className="er-modal" onClick={e => e.stopPropagation()}>
         <div className="er-header">
           <div>

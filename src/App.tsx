@@ -17,9 +17,23 @@ export default function App() {
   const {
     level, xpFloats, showReport, showLevelUp, levelUpNumber,
     setupComplete, checkDailyReset, dismissLevelUp, setShowReport,
-    showEveningRitual,
+    showEveningRitual, applyData,
   } = useGameStore();
   const [showDataPanel, setShowDataPanel] = useState(false);
+  // Lazy-init: if setupComplete is already true at mount, no restore check needed
+  const [restoreChecked, setRestoreChecked] = useState(() => setupComplete);
+
+  // Auto-restore from server backup if localStorage was wiped
+  useEffect(() => {
+    if (restoreChecked) return;
+    fetch('/api/load-state')
+      .then(r => r.json())
+      .then((data: { ok: boolean; state?: Parameters<typeof applyData>[0] }) => {
+        if (data.ok && data.state?.setupComplete) applyData(data.state);
+      })
+      .catch(() => {})
+      .finally(() => setRestoreChecked(true));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { checkDailyReset(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { document.title = `LVL ${level} — IAMBOSS`; }, [level]);
@@ -70,12 +84,15 @@ export default function App() {
     };
   }, []);
 
-  if (!setupComplete) return (
-    <>
-      <Background />
-      <Onboarding />
-    </>
-  );
+  if (!setupComplete) {
+    if (!restoreChecked) return <Background />;
+    return (
+      <>
+        <Background />
+        <Onboarding />
+      </>
+    );
+  }
 
   return (
     <div className="app">
