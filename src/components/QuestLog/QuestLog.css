@@ -182,7 +182,7 @@
 
 .quest-xp-today {
   font-family: 'Orbitron', sans-serif;
-  font-size: 11px; color: #f0c060;
+  font-size: 11px; color: var(--xp-color);
   text-shadow: 0 0 8px rgba(240,192,96,0.4);
   letter-spacing: 0.04em;
 }
@@ -230,7 +230,7 @@
 
 .quest-xp {
   font-family: 'Orbitron', sans-serif;
-  font-size: 11px; color: #f0c060; letter-spacing: 0.04em;
+  font-size: 11px; color: var(--xp-color); letter-spacing: 0.04em;
   text-shadow: 0 0 8px rgba(240,192,96,0.4);
   flex-shrink: 0;
 }

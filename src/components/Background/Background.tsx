@@ -26,6 +26,7 @@ export default function Background() {
   useEffect(() => {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext('2d')!;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let particles: Particle[] = [];
     let W = 0, H = 0;
 
@@ -128,7 +129,9 @@ export default function Background() {
         ctx.stroke();
       }
 
-      animRef.current = requestAnimationFrame(draw);
+      if (!reducedMotion.matches) {
+        animRef.current = requestAnimationFrame(draw);
+      }
     }
 
     function onClick(e: MouseEvent) {

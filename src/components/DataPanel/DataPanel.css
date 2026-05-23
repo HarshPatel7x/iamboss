@@ -63,7 +63,7 @@
   background: var(--bg-base);
   border: 1px solid var(--border);
   border-radius: 2px;
-  color: #a8c4e0;
+  color: var(--text-primary);
   font-family: 'Courier New', Courier, monospace;
   font-size: 12px;
   line-height: 1.6;
