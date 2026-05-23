@@ -3,3 +3,7 @@
   padding: 4px 10px;
   line-height: 1;
 }
+
+@media (max-width: 500px) {
+  .theme-toggle { min-height: 44px; min-width: 44px; }
+}
