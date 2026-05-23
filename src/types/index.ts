@@ -105,6 +105,11 @@ export const computeMaxSkills = (level: number): number => 3 + Math.floor(level 
 export const selectXpEarnedToday = (quests: Quest[]) =>
   quests.filter(q => q.completedToday).reduce((sum, q) => sum + q.xpReward, 0);
 
+export const selectOrphanedQuests = (quests: Quest[], skills: Skill[]): Quest[] => {
+  const live = new Set(skills.map(s => s.name));
+  return quests.filter(q => q.skill !== '' && !live.has(q.skill));
+};
+
 export const STAT_INFO: Record<keyof Stats, { label: string; name: string; effect: string; color: string }> = {
   str: { label: 'STR', name: 'Strength',   effect: 'Body quests this week',       color: '#e8623a' },
   int: { label: 'INT', name: 'Intellect',  effect: 'Skill/work/mind this week',   color: '#3b8fe8' },

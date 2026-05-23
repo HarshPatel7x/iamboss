@@ -46,6 +46,18 @@
   font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em;
 }
 
+.dp-orphan-warn {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  color: var(--warn);
+  background: rgba(232,168,37,0.08);
+  border: 1px solid rgba(232,168,37,0.35);
+  border-radius: 2px;
+  padding: 8px 12px;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}
+
 .dp-textarea {
   flex: 1;
   background: var(--bg-base);

@@ -5,6 +5,36 @@ import type { AppData, Quest, Skill, NewQuestInput, XpFloat, LogEntry, RitualEnt
 import { computeMaxSkills } from '../types';
 import { migrateAppData, CURRENT_SCHEMA_VERSION } from './migrations';
 
+// Orphaned quest→skill links from before the skill-rename. Test by PRESENCE
+// (hasOwnProperty), not truthiness — q1 maps to '' (deliberately skill-less).
+export const RELINK_MAP: Record<string, string> = {
+  q1: '',
+  q2: 'Meditation',
+  q3: 'Strength Training',
+  q4: 'Cold Exposure',
+  q5: 'Sleep Mastery',
+  q6: 'Sleep Mastery',
+};
+
+function relinkOrphanQuests(quests: Quest[]): Quest[] {
+  return quests.map(q =>
+    Object.prototype.hasOwnProperty.call(RELINK_MAP, q.id)
+      ? { ...q, skill: RELINK_MAP[q.id] }
+      : q
+  );
+}
+
+// Re-point any quest whose skill is not in the live skills array to a safe
+// fallback, so a leaked link can never silently recreate the awardSkillXp bug.
+// Quests with skill === '' are intentionally skill-less and pass through.
+function reconcileQuestSkills(quests: Quest[], skills: Skill[]): Quest[] {
+  const live = new Set(skills.map(s => s.name));
+  const fallback = skills[0]?.name ?? '';
+  return quests.map(q =>
+    (q.skill === '' || live.has(q.skill)) ? q : { ...q, skill: fallback }
+  );
+}
+
 function todayString() {
   return new Date().toISOString().split('T')[0];
 }
@@ -68,6 +98,9 @@ function syncStateToServer(s: GameStore) {
 }
 
 function awardSkillXp(skills: Skill[], skillName: string, amount: number): Skill[] {
+  if (amount > 0 && skillName !== '' && !skills.some(s => s.name === skillName)) {
+    console.warn(`[IAMBOSS] awardSkillXp: no skill named "${skillName}" — XP not awarded.`);
+  }
   return skills.map(s => {
     if (s.name !== skillName) return s;
     let newXp = s.xp + amount;
@@ -213,8 +246,12 @@ export const useGameStore = create<GameStore>()(
         addQuest: (input) => {
           const category = SKILL_CATEGORY[input.skill] ?? 'work';
           const stat = input.stat !== undefined ? input.stat : categoryToStat(category);
+          const s = get();
+          const skill = s.skills.some(sk => sk.name === input.skill)
+            ? input.skill
+            : (s.skills[0]?.name ?? input.skill);
           const newQuest: Quest = {
-            id: `q${Date.now()}`, ...input, category, stat, completedToday: false,
+            id: `q${Date.now()}`, ...input, skill, category, stat, completedToday: false,
           };
           set(s => ({ quests: [...s.quests, newQuest] }));
           syncStateToServer(get());
@@ -253,7 +290,7 @@ export const useGameStore = create<GameStore>()(
             playerName: name.trim(),
             setupComplete: true,
             skills,
-            quests,
+            quests: reconcileQuestSkills(quests, skills),
             level: 0, xp: 0, xpToNext: playerXpToNext(0),
             title: TITLES[0], streak: 0,
             lastResetDate: todayString(),
@@ -391,7 +428,13 @@ export const useGameStore = create<GameStore>()(
           syncStateToServer(get());
         },
 
-        applyData: (data) => set(s => ({ ...s, ...data })),
+        applyData: (data) => set(s => {
+          const merged = { ...s, ...data };
+          if (merged.quests && merged.skills) {
+            merged.quests = reconcileQuestSkills(relinkOrphanQuests(merged.quests), merged.skills);
+          }
+          return merged;
+        }),
       };
     },
     {
