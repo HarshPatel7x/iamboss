@@ -1,7 +1,7 @@
 import type { AppData } from '../types';
 import { canonicalQuests, canonicalSkills } from '../data/canonicalData';
 
-export const CURRENT_SCHEMA_VERSION = 13;
+export const CURRENT_SCHEMA_VERSION = 14;
 
 function categoryToStatMigration(cat: string): 'str' | 'int' | 'per' | null {
   switch (cat) {
@@ -57,6 +57,12 @@ export function migrateAppData(raw: unknown, fromVersion: number): AppData {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       s.logs = s.logs.filter((l: any) => l?.type !== 'penalty');
     }
+  }
+
+  if (fromVersion < 14) {
+    // v14: optional per-quest input field (Quest.field) + RitualEntry.fieldValue.
+    // Strictly additive — both are optional, absent on all v13-and-earlier data.
+    // No-op: existing quests/rituals pass through unchanged.
   }
 
   return {

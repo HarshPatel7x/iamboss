@@ -17,6 +17,7 @@ export type RitualQuestStatus = 'done' | 'honest' | 'skipped';
 export interface RitualEntry {
   questId: string;
   status: RitualQuestStatus;
+  fieldValue?: string;
 }
 
 export interface Ritual {
@@ -36,6 +37,11 @@ export interface Stats {
   mp: number;
 }
 
+export interface QuestField {
+  type: 'time' | 'duration' | 'text';
+  label: string;
+}
+
 export interface Quest {
   id: string;
   label: string;
@@ -45,6 +51,7 @@ export interface Quest {
   earnedXp?: number;
   completedToday: boolean;
   stat: 'str' | 'int' | 'per' | null;
+  field?: QuestField;
 }
 
 export interface Skill {
