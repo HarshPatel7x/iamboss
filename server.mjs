@@ -7,10 +7,14 @@ import { execFile } from 'child_process';
 import { lookup as dnsLookup } from 'dns';
 
 const RITUAL_LOG = '/Users/harshpatel/memories/iamboss-ritual-log.md';
-const HARSH_BRAIN = '/Users/harshpatel/harsh-brain';
+const HARSH_BRAIN = process.env.IAMBOSS_HARSH_BRAIN || '/Users/harshpatel/Desktop/Harsh/harsh-brain';
 const BACKUP_FILE = `${HARSH_BRAIN}/backups/iamboss-state.json`;
 const PENDING_FLAG = `${HARSH_BRAIN}/backups/iamboss-pending-push`;
 const GIT = '/usr/bin/git';
+
+if (!existsSync(HARSH_BRAIN)) {
+  console.error(`[IAMBOSS] backup dir not found: ${HARSH_BRAIN} — backups disabled`);
+}
 
 function writeRitualLog(rituals, quests = []) {
   if (rituals.length === 0) return;
