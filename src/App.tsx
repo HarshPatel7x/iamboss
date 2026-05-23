@@ -9,6 +9,7 @@ import ProgressReport from './components/ProgressReport/ProgressReport';
 import DataPanel from './components/DataPanel/DataPanel';
 import Onboarding from './components/Onboarding/Onboarding';
 import EveningRitual from './components/EveningRitual/EveningRitual';
+import ThemeToggle from './components/ThemeToggle/ThemeToggle';
 import { playOpenSound, playHoverSound, playClickSound } from './utils/sound';
 import './styles/globals.css';
 import './App.css';
@@ -125,6 +126,7 @@ export default function App() {
         <div className="app-header">
           <div className="app-brand">◈ IAMBOSS SYSTEM</div>
           <div className="app-header-right">
+            <ThemeToggle />
             <button className="btn btn-report" onClick={() => { playOpenSound(); setShowReport(true); }} title="Progress Report">📊</button>
             <button className="btn btn-data" onClick={() => { playOpenSound(); setShowDataPanel(true); }} title="Data Panel">⚙</button>
           </div>
