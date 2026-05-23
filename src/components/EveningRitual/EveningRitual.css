@@ -402,5 +402,5 @@
 
 @media (max-width: 500px) {
   .er-close { width: 44px; height: 44px; }
-  .er-vital-toggle { padding: 11px 16px; }
+  .er-vital-toggle { padding: 11px 16px; min-height: 44px; }
 }
