@@ -17,7 +17,11 @@ function writeRitualLog(rituals, quests = []) {
 
   const appDates = new Set(rituals.map(r => r.date));
   const questLabel = {};
-  for (const q of quests) questLabel[q.id] = q.label;
+  const questFieldLabel = {};
+  for (const q of quests) {
+    questLabel[q.id] = q.label;
+    if (q.field?.label) questFieldLabel[q.id] = q.field.label;
+  }
 
   // Preserve teacher-written entries for dates the app has no data for
   let preserved = '';
@@ -45,6 +49,12 @@ function writeRitualLog(rituals, quests = []) {
     lines.push(`## ${r.date}`);
     lines.push(`- Mood: ${r.mood ?? '--'}/100 | Energy: ${r.energy ?? '--'}/100`);
     lines.push(`- Quests: ${done}/${total} done${questDetail ? ` — ${questDetail}` : ''}`);
+    for (const q of r.quests) {
+      if (!q.fieldValue) continue;
+      const label = questLabel[q.questId] || q.questId;
+      const fieldLabel = questFieldLabel[q.questId] || 'note';
+      lines.push(`- Detail: ${label} — ${fieldLabel}: ${q.fieldValue}`);
+    }
     if (r.journal?.mattered?.trim()) lines.push(`- Mattered: ${r.journal.mattered.trim()}`);
     if (r.journal?.obstacle?.trim()) lines.push(`- Obstacle: ${r.journal.obstacle.trim()}`);
     if (r.journal?.tomorrow?.trim()) lines.push(`- Tomorrow: ${r.journal.tomorrow.trim()}`);

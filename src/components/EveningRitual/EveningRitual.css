@@ -87,12 +87,17 @@
 .er-quest-list { display: flex; flex-direction: column; gap: 4px; }
 
 .er-quest-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
+  display: flex; flex-direction: column;
+  gap: 6px;
   padding: 8px 10px;
   background: rgba(255, 255, 255, 0.015);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 2px;
+}
+
+.er-quest-main {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
 }
 
 .er-quest-label {
@@ -100,6 +105,38 @@
   font-size: 13px; font-weight: 500;
   color: var(--text-primary);
   flex: 1; min-width: 0;
+}
+
+.er-quest-field {
+  display: flex; align-items: center; gap: 8px;
+  padding-left: 2px;
+}
+.er-quest-field-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; letter-spacing: 0.06em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.er-quest-field-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  padding: 4px 8px;
+  width: 110px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.er-quest-field-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.25);
+}
+.er-quest-field-suffix {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  color: var(--text-dim);
 }
 
 .er-status-group { display: flex; gap: 4px; flex-shrink: 0; }
