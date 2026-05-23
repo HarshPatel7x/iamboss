@@ -35,6 +35,43 @@ function reconcileQuestSkills(quests: Quest[], skills: Skill[]): Quest[] {
   );
 }
 
+// Replays corrected quest→skill links against ritual history to recompute leaked
+// skill XP. Pure: returns per-skill {old, next} for sign-off. Replay source =
+// rituals[] only (user has 0 quest_complete log entries; dedupe is a no-op).
+export function computeSkillXpBackfill(
+  quests: Quest[],
+  skills: Skill[],
+  rituals: Ritual[]
+): Record<string, { old: { level: number; xp: number }; next: { level: number; xp: number } }> {
+  const relinked = relinkOrphanQuests(quests);
+  const questById: Record<string, Quest> = {};
+  for (const q of relinked) questById[q.id] = q;
+
+  const totalXpBySkill: Record<string, number> = {};
+  for (const r of rituals) {
+    for (const e of r.quests) {
+      if (e.status !== 'done') continue;
+      const q = questById[e.questId];
+      if (!q || q.skill === '') continue;
+      totalXpBySkill[q.skill] = (totalXpBySkill[q.skill] ?? 0) + q.xpReward;
+    }
+  }
+
+  const result: Record<string, { old: { level: number; xp: number }; next: { level: number; xp: number } }> = {};
+  const knownSkillNames = new Set([...skills.map(s => s.name), ...Object.keys(totalXpBySkill)]);
+  for (const name of knownSkillNames) {
+    const existing = skills.find(s => s.name === name);
+    const total = totalXpBySkill[name] ?? 0;
+    const nextLevel = Math.floor(total / SKILL_XP_PER_LEVEL);
+    const nextXp = total % SKILL_XP_PER_LEVEL;
+    result[name] = {
+      old: { level: existing?.level ?? 0, xp: existing?.xp ?? 0 },
+      next: { level: nextLevel, xp: nextXp },
+    };
+  }
+  return result;
+}
+
 function todayString() {
   return new Date().toISOString().split('T')[0];
 }
@@ -79,6 +116,7 @@ interface GameStore extends AppData {
 
   resetToCanonical: () => void;
   applyData: (data: Partial<AppData>) => void;
+  backfillSkillXp: () => void;
 }
 
 let floatId = 0;
@@ -435,6 +473,38 @@ export const useGameStore = create<GameStore>()(
           }
           return merged;
         }),
+
+        // One-shot backfill: relinks quests via RELINK_MAP, recomputes each
+        // skill's {level,xp} from ritual history, and APPENDS any newly
+        // required skill (e.g. Sleep Mastery) that was missing pre-relink.
+        backfillSkillXp: () => {
+          const s = get();
+          const relinkedQuests = relinkOrphanQuests(s.quests);
+          const report = computeSkillXpBackfill(s.quests, s.skills, s.rituals);
+
+          const updatedSkills: Skill[] = s.skills.map(sk => {
+            const entry = report[sk.name];
+            return entry
+              ? { ...sk, level: entry.next.level, xp: entry.next.xp, xpToNext: SKILL_XP_PER_LEVEL }
+              : sk;
+          });
+
+          const existingNames = new Set(updatedSkills.map(sk => sk.name));
+          let nextId = updatedSkills.length + 1;
+          for (const [name, entry] of Object.entries(report)) {
+            if (existingNames.has(name)) continue;
+            updatedSkills.push({
+              id: `s${nextId++}`,
+              name,
+              level: entry.next.level,
+              xp: entry.next.xp,
+              xpToNext: SKILL_XP_PER_LEVEL,
+            });
+          }
+
+          set({ quests: relinkedQuests, skills: updatedSkills });
+          syncStateToServer(get());
+        },
       };
     },
     {
