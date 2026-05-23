@@ -5,6 +5,73 @@ import type { AppData, Quest, Skill, NewQuestInput, XpFloat, LogEntry, RitualEnt
 import { computeMaxSkills } from '../types';
 import { migrateAppData, CURRENT_SCHEMA_VERSION } from './migrations';
 
+// Orphaned quest→skill links from before the skill-rename. Test by PRESENCE
+// (hasOwnProperty), not truthiness — q1 maps to '' (deliberately skill-less).
+export const RELINK_MAP: Record<string, string> = {
+  q1: '',
+  q2: 'Meditation',
+  q3: 'Strength Training',
+  q4: 'Cold Exposure',
+  q5: 'Sleep Mastery',
+  q6: 'Sleep Mastery',
+};
+
+function relinkOrphanQuests(quests: Quest[]): Quest[] {
+  return quests.map(q =>
+    Object.prototype.hasOwnProperty.call(RELINK_MAP, q.id)
+      ? { ...q, skill: RELINK_MAP[q.id] }
+      : q
+  );
+}
+
+// Re-point any quest whose skill is not in the live skills array to a safe
+// fallback, so a leaked link can never silently recreate the awardSkillXp bug.
+// Quests with skill === '' are intentionally skill-less and pass through.
+function reconcileQuestSkills(quests: Quest[], skills: Skill[]): Quest[] {
+  const live = new Set(skills.map(s => s.name));
+  const fallback = skills[0]?.name ?? '';
+  return quests.map(q =>
+    (q.skill === '' || live.has(q.skill)) ? q : { ...q, skill: fallback }
+  );
+}
+
+// Replays corrected quest→skill links against ritual history to recompute leaked
+// skill XP. Pure: returns per-skill {old, next} for sign-off. Replay source =
+// rituals[] only (user has 0 quest_complete log entries; dedupe is a no-op).
+export function computeSkillXpBackfill(
+  quests: Quest[],
+  skills: Skill[],
+  rituals: Ritual[]
+): Record<string, { old: { level: number; xp: number }; next: { level: number; xp: number } }> {
+  const relinked = relinkOrphanQuests(quests);
+  const questById: Record<string, Quest> = {};
+  for (const q of relinked) questById[q.id] = q;
+
+  const totalXpBySkill: Record<string, number> = {};
+  for (const r of rituals) {
+    for (const e of r.quests) {
+      if (e.status !== 'done') continue;
+      const q = questById[e.questId];
+      if (!q || q.skill === '') continue;
+      totalXpBySkill[q.skill] = (totalXpBySkill[q.skill] ?? 0) + q.xpReward;
+    }
+  }
+
+  const result: Record<string, { old: { level: number; xp: number }; next: { level: number; xp: number } }> = {};
+  const knownSkillNames = new Set([...skills.map(s => s.name), ...Object.keys(totalXpBySkill)]);
+  for (const name of knownSkillNames) {
+    const existing = skills.find(s => s.name === name);
+    const total = totalXpBySkill[name] ?? 0;
+    const nextLevel = Math.floor(total / SKILL_XP_PER_LEVEL);
+    const nextXp = total % SKILL_XP_PER_LEVEL;
+    result[name] = {
+      old: { level: existing?.level ?? 0, xp: existing?.xp ?? 0 },
+      next: { level: nextLevel, xp: nextXp },
+    };
+  }
+  return result;
+}
+
 function todayString() {
   return new Date().toISOString().split('T')[0];
 }
@@ -49,11 +116,29 @@ interface GameStore extends AppData {
 
   resetToCanonical: () => void;
   applyData: (data: Partial<AppData>) => void;
+  backfillSkillXp: () => void;
 }
 
 let floatId = 0;
 
+function syncStateToServer(s: GameStore) {
+  const backup = {
+    playerName: s.playerName, setupComplete: s.setupComplete,
+    level: s.level, xp: s.xp, xpToNext: s.xpToNext,
+    title: s.title, lastResetDate: s.lastResetDate, streak: s.streak,
+    quests: s.quests, skills: s.skills, logs: s.logs, rituals: s.rituals,
+  };
+  fetch('/api/save-state', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(backup),
+  }).catch(() => {});
+}
+
 function awardSkillXp(skills: Skill[], skillName: string, amount: number): Skill[] {
+  if (amount > 0 && skillName !== '' && !skills.some(s => s.name === skillName)) {
+    console.warn(`[IAMBOSS] awardSkillXp: no skill named "${skillName}" — XP not awarded.`);
+  }
   return skills.map(s => {
     if (s.name !== skillName) return s;
     let newXp = s.xp + amount;
@@ -199,10 +284,15 @@ export const useGameStore = create<GameStore>()(
         addQuest: (input) => {
           const category = SKILL_CATEGORY[input.skill] ?? 'work';
           const stat = input.stat !== undefined ? input.stat : categoryToStat(category);
+          const s = get();
+          const skill = s.skills.some(sk => sk.name === input.skill)
+            ? input.skill
+            : (s.skills[0]?.name ?? input.skill);
           const newQuest: Quest = {
-            id: `q${Date.now()}`, ...input, category, stat, completedToday: false,
+            id: `q${Date.now()}`, ...input, skill, category, stat, completedToday: false,
           };
           set(s => ({ quests: [...s.quests, newQuest] }));
+          syncStateToServer(get());
         },
 
         deleteQuest: (id) => set(s => ({ quests: s.quests.filter(q => q.id !== id) })),
@@ -213,6 +303,7 @@ export const useGameStore = create<GameStore>()(
           if (s.skills.length >= computeMaxSkills(s.level)) return false;
           const newSkill: Skill = { id: `s${Date.now()}`, name, level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL };
           set(s => ({ skills: [...s.skills, newSkill] }));
+          syncStateToServer(get());
           return true;
         },
 
@@ -237,13 +328,14 @@ export const useGameStore = create<GameStore>()(
             playerName: name.trim(),
             setupComplete: true,
             skills,
-            quests,
+            quests: reconcileQuestSkills(quests, skills),
             level: 0, xp: 0, xpToNext: playerXpToNext(0),
             title: TITLES[0], streak: 0,
             lastResetDate: todayString(),
             logs: [],
             rituals: [],
           });
+          syncStateToServer(get());
         },
 
         submitRitual: (input) => {
@@ -319,6 +411,16 @@ export const useGameStore = create<GameStore>()(
             get().logEvent({ type: 'level_up', title: `Reached Level ${lastLevel}`, level: lastLevel });
             get().showLevelUpOverlay(lastLevel);
           }
+
+          // Silent full-state backup to disk + GitHub
+          syncStateToServer(get());
+
+          // Silent sync to companion server — writes /memories/iamboss-ritual-log.md
+          fetch('/api/sync-ritual', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rituals: updatedRituals, quests: get().quests }),
+          }).catch(() => {});
         },
 
         openEveningRitual: () => set({ showEveningRitual: true }),
@@ -361,9 +463,48 @@ export const useGameStore = create<GameStore>()(
             logs: [],
             rituals: [],
           });
+          syncStateToServer(get());
         },
 
-        applyData: (data) => set(s => ({ ...s, ...data })),
+        applyData: (data) => set(s => {
+          const merged = { ...s, ...data };
+          if (merged.quests && merged.skills) {
+            merged.quests = reconcileQuestSkills(relinkOrphanQuests(merged.quests), merged.skills);
+          }
+          return merged;
+        }),
+
+        // One-shot backfill: relinks quests via RELINK_MAP, recomputes each
+        // skill's {level,xp} from ritual history, and APPENDS any newly
+        // required skill (e.g. Sleep Mastery) that was missing pre-relink.
+        backfillSkillXp: () => {
+          const s = get();
+          const relinkedQuests = relinkOrphanQuests(s.quests);
+          const report = computeSkillXpBackfill(s.quests, s.skills, s.rituals);
+
+          const updatedSkills: Skill[] = s.skills.map(sk => {
+            const entry = report[sk.name];
+            return entry
+              ? { ...sk, level: entry.next.level, xp: entry.next.xp, xpToNext: SKILL_XP_PER_LEVEL }
+              : sk;
+          });
+
+          const existingNames = new Set(updatedSkills.map(sk => sk.name));
+          let nextId = updatedSkills.length + 1;
+          for (const [name, entry] of Object.entries(report)) {
+            if (existingNames.has(name)) continue;
+            updatedSkills.push({
+              id: `s${nextId++}`,
+              name,
+              level: entry.next.level,
+              xp: entry.next.xp,
+              xpToNext: SKILL_XP_PER_LEVEL,
+            });
+          }
+
+          set({ quests: relinkedQuests, skills: updatedSkills });
+          syncStateToServer(get());
+        },
       };
     },
     {

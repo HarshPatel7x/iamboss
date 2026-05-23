@@ -17,6 +17,7 @@ export type RitualQuestStatus = 'done' | 'honest' | 'skipped';
 export interface RitualEntry {
   questId: string;
   status: RitualQuestStatus;
+  fieldValue?: string;
 }
 
 export interface Ritual {
@@ -36,6 +37,11 @@ export interface Stats {
   mp: number;
 }
 
+export interface QuestField {
+  type: 'time' | 'duration' | 'text';
+  label: string;
+}
+
 export interface Quest {
   id: string;
   label: string;
@@ -45,6 +51,7 @@ export interface Quest {
   earnedXp?: number;
   completedToday: boolean;
   stat: 'str' | 'int' | 'per' | null;
+  field?: QuestField;
 }
 
 export interface Skill {
@@ -97,6 +104,11 @@ export const computeMaxSkills = (level: number): number => 3 + Math.floor(level 
 
 export const selectXpEarnedToday = (quests: Quest[]) =>
   quests.filter(q => q.completedToday).reduce((sum, q) => sum + q.xpReward, 0);
+
+export const selectOrphanedQuests = (quests: Quest[], skills: Skill[]): Quest[] => {
+  const live = new Set(skills.map(s => s.name));
+  return quests.filter(q => q.skill !== '' && !live.has(q.skill));
+};
 
 export const STAT_INFO: Record<keyof Stats, { label: string; name: string; effect: string; color: string }> = {
   str: { label: 'STR', name: 'Strength',   effect: 'Body quests this week',       color: '#e8623a' },

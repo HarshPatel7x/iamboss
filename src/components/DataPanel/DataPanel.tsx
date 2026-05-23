@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { migrateAppData, CURRENT_SCHEMA_VERSION } from '../../store/migrations';
 import type { AppData } from '../../types';
+import { selectOrphanedQuests } from '../../types';
 import './DataPanel.css';
 
 interface Props {
@@ -20,6 +21,8 @@ export default function DataPanel({ onClose }: Props) {
     playerName, setupComplete, level, xp, xpToNext, title, streak, lastResetDate,
     quests, skills, logs, rituals,
   };
+
+  const orphans = selectOrphanedQuests(quests, skills);
 
   const [jsonText, setJsonText] = useState(() =>
     JSON.stringify({ schemaVersion: CURRENT_SCHEMA_VERSION, data: state }, null, 2)
@@ -94,6 +97,13 @@ export default function DataPanel({ onClose }: Props) {
         </div>
 
         <div className="dp-body">
+          {orphans.length > 0 && (
+            <div className="dp-orphan-warn">
+              ⚠ {orphans.length} quest{orphans.length === 1 ? '' : 's'} point to a skill you no longer have:
+              {' '}{orphans.map(q => `${q.label} → ${q.skill}`).join('; ')}.
+              These leak skill-XP. Retag them in the JSON or via the relink.
+            </div>
+          )}
           <div className="dp-hint">Edit JSON directly or Import a file. Apply to save. Reset restores canonical defaults.</div>
           <textarea
             className={`dp-textarea ${error ? 'dp-textarea--error' : ''}`}

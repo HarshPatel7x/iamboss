@@ -20,10 +20,14 @@
 
   --text-primary:   #eef2ff;
   --text-secondary: #90a8cc;
-  --text-dim:       #4a6080;
+  --text-dim:       #6c83a6;
 
   --border:        rgba(0,212,255,0.18);
   --border-purple: rgba(155,93,229,0.25);
+
+  --scanline:    rgba(0,0,0,0.06);
+  --warn:        #e8a825;
+  --xp-color:    #f0c060;
 
   --radius: 2px;
 
@@ -36,9 +40,49 @@
   --cat-recovery: #7089a8;
 
   font-family: 'Inter', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+[data-theme="light"] {
+  --bg-base:     #eef1f6;
+  --bg-panel:    #ffffff;
+  --bg-card:     #f4f6fa;
+  --bg-elevated: #e8ecf3;
+
+  --blue:        #0a7ea8;
+  --purple:      #6b3fb0;
+  --blue-dim:    rgba(10,126,168,0.12);
+  --purple-dim:  rgba(107,63,176,0.12);
+
+  /* glow demoted — neon on white is smudge */
+  --glow-blue:    0 0 0 1px rgba(10,126,168,0.18);
+  --glow-purple:  0 0 0 1px rgba(107,63,176,0.18);
+  --glow-blue-sm: 0 0 0 1px rgba(10,126,168,0.20);
+
+  --text-primary:   #15202b;
+  --text-secondary: #41566e;
+  --text-dim:       #5a6e82;
+
+  --border:        rgba(10,126,168,0.25);
+  --border-purple: rgba(107,63,176,0.25);
+
+  --scanline:    rgba(0,0,0,0.025);
+  --warn:        #9a6c00;
+  --xp-color:    #7a5500;
+
+  --cat-ritual:   #6b3fb0;
+  --cat-body:     #c2451f;
+  --cat-work:     #0a7a52;
+  --cat-skill:    #1763b8;
+  --cat-mind:     #9a6c00;
+  --cat-recovery: #4a5d72;
 }
 
 html, body, #root {
@@ -55,7 +99,7 @@ body::before {
   position: fixed; inset: 0;
   background: repeating-linear-gradient(
     0deg, transparent, transparent 2px,
-    rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px
+    var(--scanline) 2px, var(--scanline) 4px
   );
   pointer-events: none;
   z-index: 9999;
@@ -143,3 +187,11 @@ body::before {
 .cat-skill    { color: var(--cat-skill);    background: rgba(43,125,233,0.12); }
 .cat-mind     { color: var(--cat-mind);     background: rgba(212,146,10,0.12); }
 .cat-recovery { color: var(--cat-recovery); background: rgba(96,104,128,0.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

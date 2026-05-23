@@ -9,6 +9,7 @@ import ProgressReport from './components/ProgressReport/ProgressReport';
 import DataPanel from './components/DataPanel/DataPanel';
 import Onboarding from './components/Onboarding/Onboarding';
 import EveningRitual from './components/EveningRitual/EveningRitual';
+import ThemeToggle from './components/ThemeToggle/ThemeToggle';
 import { playOpenSound, playHoverSound, playClickSound } from './utils/sound';
 import './styles/globals.css';
 import './App.css';
@@ -17,9 +18,23 @@ export default function App() {
   const {
     level, xpFloats, showReport, showLevelUp, levelUpNumber,
     setupComplete, checkDailyReset, dismissLevelUp, setShowReport,
-    showEveningRitual,
+    showEveningRitual, applyData,
   } = useGameStore();
   const [showDataPanel, setShowDataPanel] = useState(false);
+  // Lazy-init: if setupComplete is already true at mount, no restore check needed
+  const [restoreChecked, setRestoreChecked] = useState(() => setupComplete);
+
+  // Auto-restore from server backup if localStorage was wiped
+  useEffect(() => {
+    if (restoreChecked) return;
+    fetch('/api/load-state')
+      .then(r => r.json())
+      .then((data: { ok: boolean; state?: Parameters<typeof applyData>[0] }) => {
+        if (data.ok && data.state?.setupComplete) applyData(data.state);
+      })
+      .catch(() => {})
+      .finally(() => setRestoreChecked(true));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { checkDailyReset(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { document.title = `LVL ${level} — IAMBOSS`; }, [level]);
@@ -70,12 +85,15 @@ export default function App() {
     };
   }, []);
 
-  if (!setupComplete) return (
-    <>
-      <Background />
-      <Onboarding />
-    </>
-  );
+  if (!setupComplete) {
+    if (!restoreChecked) return <Background />;
+    return (
+      <>
+        <Background />
+        <Onboarding />
+      </>
+    );
+  }
 
   return (
     <div className="app">
@@ -108,6 +126,7 @@ export default function App() {
         <div className="app-header">
           <div className="app-brand">◈ IAMBOSS SYSTEM</div>
           <div className="app-header-right">
+            <ThemeToggle />
             <button className="btn btn-report" onClick={() => { playOpenSound(); setShowReport(true); }} title="Progress Report">📊</button>
             <button className="btn btn-data" onClick={() => { playOpenSound(); setShowDataPanel(true); }} title="Data Panel">⚙</button>
           </div>

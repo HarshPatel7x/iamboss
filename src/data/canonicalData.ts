@@ -29,7 +29,7 @@ export const SKILL_CATEGORY: Record<string, QuestCategory> = {
   'Language Learning': 'skill',   'Drawing': 'skill',        'Music': 'skill',
   'Sales': 'work',                'Entrepreneurship': 'work', 'Data Analysis': 'mind',
   'Negotiation': 'work',          'Photography': 'skill',    'Sleep Mastery': 'recovery',
-  'Consistency': 'ritual',
+  'Consistency': 'ritual',        'Inner Peace': 'ritual',   'Will Power': 'ritual',
 };
 
 export const SKILL_POOL: string[] = [
@@ -39,26 +39,16 @@ export const SKILL_POOL: string[] = [
   'Cold Exposure',     'Journaling',     'Chess',           'Language Learning',
   'Drawing',           'Music',          'Sales',           'Entrepreneurship',
   'Data Analysis',     'Negotiation',    'Photography',     'Sleep Mastery',
-  'Consistency',
+  'Consistency',       'Inner Peace',    'Will Power',
 ];
 
 export const canonicalQuests: Quest[] = [
-  { id: 'q1',  label: 'Wake Up — No Phone',   category: 'ritual',   skill: 'Meditation',       xpReward: 10, completedToday: false, stat: 'per' },
-  { id: 'q2',  label: 'Meditation',            category: 'mind',     skill: 'Meditation',       xpReward: 15, completedToday: false, stat: 'int' },
-  { id: 'q3',  label: 'Workout',               category: 'body',     skill: 'Strength Training',xpReward: 30, completedToday: false, stat: 'str' },
-  { id: 'q4',  label: 'Cold Shower',           category: 'recovery', skill: 'Cold Exposure',    xpReward: 10, completedToday: false, stat: null },
-  { id: 'q5',  label: 'Reading + Breakfast',   category: 'mind',     skill: 'Speed Reading',    xpReward: 15, completedToday: false, stat: 'int' },
-  { id: 'q6',  label: 'Deep Work — Session 1', category: 'work',     skill: 'Deep Work',        xpReward: 25, completedToday: false, stat: 'int' },
-  { id: 'q7',  label: 'Break + Walk',          category: 'body',     skill: 'Strength Training',xpReward: 5,  completedToday: false, stat: 'str' },
-  { id: 'q8',  label: 'Deep Work — Session 2', category: 'work',     skill: 'Deep Work',        xpReward: 20, completedToday: false, stat: 'int' },
-  { id: 'q9',  label: 'Lunch — No Screen',     category: 'mind',     skill: 'Nutrition',        xpReward: 5,  completedToday: false, stat: 'int' },
-  { id: 'q10', label: 'Skill Building',        category: 'skill',    skill: 'Programming',      xpReward: 30, completedToday: false, stat: 'int' },
-  { id: 'q11', label: 'Work Wrap-Up',          category: 'work',     skill: 'Deep Work',        xpReward: 10, completedToday: false, stat: 'int' },
-  { id: 'q12', label: 'Finance Check',         category: 'mind',     skill: 'Investing',        xpReward: 10, completedToday: false, stat: 'int' },
-  { id: 'q13', label: 'Free Time — Earned',    category: 'recovery', skill: 'Chess',            xpReward: 5,  completedToday: false, stat: null },
-  { id: 'q14', label: 'Dinner — Eat Clean',    category: 'recovery', skill: 'Nutrition',        xpReward: 5,  completedToday: false, stat: null },
-  { id: 'q15', label: 'Wind Down + Journal',   category: 'ritual',   skill: 'Journaling',       xpReward: 10, completedToday: false, stat: 'per' },
-  { id: 'q16', label: 'Sleep by 8:30',         category: 'ritual',   skill: 'Sleep Mastery',    xpReward: 15, completedToday: false, stat: 'per' },
+  { id: 'q1', label: 'Wake Up — No Phone', category: 'ritual',   skill: 'Consistency',      xpReward: 10, completedToday: false, stat: 'per' },
+  { id: 'q2', label: 'Meditate',           category: 'ritual',   skill: 'Inner Peace',      xpReward: 15, completedToday: false, stat: 'per' },
+  { id: 'q3', label: 'Exercise',           category: 'body',     skill: 'Strength Training',xpReward: 30, completedToday: false, stat: 'str' },
+  { id: 'q4', label: 'Cold Shower',        category: 'ritual',   skill: 'Will Power',       xpReward: 10, completedToday: false, stat: 'per' },
+  { id: 'q5', label: 'Wind Down',          category: 'ritual',   skill: 'Sleep Mastery',    xpReward: 10, completedToday: false, stat: 'per' },
+  { id: 'q6', label: 'Sleep',              category: 'recovery', skill: 'Sleep Mastery',    xpReward: 15, completedToday: false, stat: null  },
 ];
 
 export const QUEST_TEMPLATES: Record<string, QuestTemplate[]> = {
@@ -186,6 +176,16 @@ export const QUEST_TEMPLATES: Record<string, QuestTemplate[]> = {
     { label: 'Perfect Day — All Quests',  category: 'ritual',   skill: 'Consistency',       xpReward: 35 },
     { label: 'Morning Anchor Complete',   category: 'ritual',   skill: 'Consistency',       xpReward: 20 },
     { label: 'Check In on Habit Tracker', category: 'ritual',   skill: 'Consistency',       xpReward: 10 },
+  ],
+  'Inner Peace': [
+    { label: 'Meditation — 30 min',       category: 'ritual',   skill: 'Inner Peace',       xpReward: 35 },
+    { label: 'Breathwork Session',        category: 'ritual',   skill: 'Inner Peace',       xpReward: 20 },
+    { label: 'Mindful Walk — 15 min',     category: 'ritual',   skill: 'Inner Peace',       xpReward: 10 },
+  ],
+  'Will Power': [
+    { label: 'Cold Shower — Full 3 min',  category: 'ritual',   skill: 'Will Power',        xpReward: 35 },
+    { label: 'Cold Shower — 1 min',       category: 'ritual',   skill: 'Will Power',        xpReward: 20 },
+    { label: 'Do the Hard Thing First',   category: 'ritual',   skill: 'Will Power',        xpReward: 10 },
   ],
 };
 
@@ -315,6 +315,16 @@ export const SKILL_MESSAGES: Record<string, string[]> = {
     'The streak is the system. Protect it.',
     'Consistency is a vote. Every day is an election.',
   ],
+  'Inner Peace': [
+    'A calm mind cuts through noise. Train the stillness.',
+    'Equanimity is not distance. It is presence without attachment.',
+    'Chaos is the test. Peace is the skill.',
+  ],
+  'Will Power': [
+    'The body protests. You proceed anyway. That is will.',
+    'Discipline is choosing the harder thing before your excuses arrive.',
+    'Will bends reality. Everything else just waits.',
+  ],
 };
 
 export const DEFAULT_MESSAGES: string[] = [
@@ -324,13 +334,9 @@ export const DEFAULT_MESSAGES: string[] = [
 ];
 
 export const canonicalSkills: Skill[] = [
-  { id: 's1', name: 'Deep Work',        level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's2', name: 'Strength Training',level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's3', name: 'Programming',      level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's4', name: 'Meditation',       level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's5', name: 'Investing',        level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's6', name: 'Speed Reading',    level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's7', name: 'Nutrition',        level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's8', name: 'Cold Exposure',    level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
-  { id: 's9', name: 'Journaling',       level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
+  { id: 's1', name: 'Consistency',       level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
+  { id: 's2', name: 'Inner Peace',       level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
+  { id: 's3', name: 'Strength Training', level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
+  { id: 's4', name: 'Will Power',        level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
+  { id: 's5', name: 'Sleep Mastery',     level: 0, xp: 0, xpToNext: SKILL_XP_PER_LEVEL },
 ];

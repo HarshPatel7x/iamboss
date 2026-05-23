@@ -30,6 +30,12 @@ export default function EveningRitual() {
     for (const e of existing.quests) m[e.questId] = e.status;
     return m;
   });
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => {
+    if (!existing) return {};
+    const m: Record<string, string> = {};
+    for (const e of existing.quests) if (e.fieldValue) m[e.questId] = e.fieldValue;
+    return m;
+  });
   const [mattered, setMattered] = useState(() => existing?.journal.mattered ?? '');
   const [obstacle, setObstacle] = useState(() => existing?.journal.obstacle ?? '');
   const [tomorrow, setTomorrow] = useState(() => existing?.journal.tomorrow ?? '');
@@ -43,7 +49,12 @@ export default function EveningRitual() {
   function handleSubmit() {
     const entries: RitualEntry[] = quests
       .filter(q => statusMap[q.id] != null)
-      .map(q => ({ questId: q.id, status: statusMap[q.id] as RitualQuestStatus }));
+      .map(q => {
+        const entry: RitualEntry = { questId: q.id, status: statusMap[q.id] as RitualQuestStatus };
+        const v = fieldValues[q.id];
+        if (v && v.trim() !== '') entry.fieldValue = v.trim();
+        return entry;
+      });
 
     submitRitual({
       quests: entries,
@@ -54,8 +65,22 @@ export default function EveningRitual() {
     closeEveningRitual();
   }
 
+  const hasUnsavedContent =
+    !existing &&
+    (Object.values(statusMap).some(v => v !== null) ||
+      mattered.trim() !== '' ||
+      obstacle.trim() !== '' ||
+      tomorrow.trim() !== '' ||
+      mood !== null ||
+      energy !== null);
+
+  function handleOverlayClick() {
+    if (hasUnsavedContent && !window.confirm('Discard ritual progress?')) return;
+    closeEveningRitual();
+  }
+
   return (
-    <div className="er-overlay" onClick={closeEveningRitual}>
+    <div className="er-overlay" onClick={handleOverlayClick}>
       <div className="er-modal" onClick={e => e.stopPropagation()}>
         <div className="er-header">
           <div>
@@ -72,29 +97,45 @@ export default function EveningRitual() {
             <div className="er-quest-list">
               {quests.map(q => {
                 const status = statusMap[q.id] ?? null;
+                const inputType = q.field?.type === 'time' ? 'time' : q.field?.type === 'duration' ? 'number' : 'text';
                 return (
                   <div key={q.id} className="er-quest-row">
-                    <div className="er-quest-label">{q.label}</div>
-                    <div className="er-status-group">
-                      <button
-                        className={`er-status-btn er-done ${status === 'done' ? 'active' : ''}`}
-                        onClick={() => setStatus(q.id, 'done')}
-                        data-tooltip="Completed it. Full XP + streak credit."
-                        aria-label="Done — Completed it. Full XP and streak credit."
-                      >✓ Done</button>
-                      <button
-                        className={`er-status-btn er-honest ${status === 'honest' ? 'active' : ''}`}
-                        onClick={() => setStatus(q.id, 'honest')}
-                        data-tooltip="Tried but it didn't go like planned. Streak stays. No XP."
-                        aria-label="Honest — Tried but it didn't go like planned. Streak stays. No XP."
-                      >· Honest</button>
-                      <button
-                        className={`er-status-btn er-skipped ${status === 'skipped' ? 'active' : ''}`}
-                        onClick={() => setStatus(q.id, 'skipped')}
-                        data-tooltip="Consciously didn't do it. Streak stays. No XP."
-                        aria-label="Skipped — Consciously didn't do it. Streak stays. No XP."
-                      >× Skipped</button>
+                    <div className="er-quest-main">
+                      <div className="er-quest-label">{q.label}</div>
+                      <div className="er-status-group">
+                        <button
+                          className={`er-status-btn er-done ${status === 'done' ? 'active' : ''}`}
+                          onClick={() => setStatus(q.id, 'done')}
+                          data-tooltip="Completed it. Full XP + streak credit."
+                          aria-label="Done — Completed it. Full XP and streak credit."
+                        >✓ Done</button>
+                        <button
+                          className={`er-status-btn er-honest ${status === 'honest' ? 'active' : ''}`}
+                          onClick={() => setStatus(q.id, 'honest')}
+                          data-tooltip="Tried but it didn't go like planned. Streak stays. No XP."
+                          aria-label="Honest — Tried but it didn't go like planned. Streak stays. No XP."
+                        >· Honest</button>
+                        <button
+                          className={`er-status-btn er-skipped ${status === 'skipped' ? 'active' : ''}`}
+                          onClick={() => setStatus(q.id, 'skipped')}
+                          data-tooltip="Consciously didn't do it. Streak stays. No XP."
+                          aria-label="Skipped — Consciously didn't do it. Streak stays. No XP."
+                        >× Skipped</button>
+                      </div>
                     </div>
+                    {q.field && (
+                      <label className="er-quest-field">
+                        <span className="er-quest-field-label">{q.field.label}</span>
+                        <input
+                          className="er-quest-field-input"
+                          type={inputType}
+                          min={inputType === 'number' ? 0 : undefined}
+                          value={fieldValues[q.id] ?? ''}
+                          onChange={e => setFieldValues(prev => ({ ...prev, [q.id]: e.target.value }))}
+                        />
+                        {q.field.type === 'duration' && <span className="er-quest-field-suffix">min</span>}
+                      </label>
+                    )}
                   </div>
                 );
               })}
@@ -107,7 +148,7 @@ export default function EveningRitual() {
             <div className="er-section-title">◈ JOURNAL · all optional</div>
             <textarea
               className="er-textarea"
-              placeholder="What did you do today that mattered?"
+              placeholder="What did you do yesterday that mattered?"
               value={mattered}
               onChange={e => setMattered(e.target.value)}
               rows={2}
@@ -121,7 +162,7 @@ export default function EveningRitual() {
             />
             <textarea
               className="er-textarea"
-              placeholder="One thing for tomorrow."
+              placeholder="One thing for today."
               value={tomorrow}
               onChange={e => setTomorrow(e.target.value)}
               rows={2}
